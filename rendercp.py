@@ -8,7 +8,7 @@ def corerct_checkpoint_marker(x,y,z,dx,dy,dz,selector):
     A  = round(dx * 100)
     B  = round(dy * 100)
     C  = round(dz * 100)
-    D = round(- 10000 * (A * x + B * y + C * z))
+    D = round(- 100 * (A * x + B * y + C * z))
     lib.execute(f'scoreboard players set {selector} W {D}')
 
 def main():

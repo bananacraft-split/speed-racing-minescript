@@ -224,15 +224,18 @@ if __name__ == "__main__":
                 tp_x = f"{X:.2f}d"
                 tp_y = f"{y1-0.8}d"
                 tp_z = f"{Z:.2f}d"
-                tp_pitch = f"{dir}d"
-                tp_yaw = "0d"
+                tp_yaw = f"{dir}d"
+                tp_pitch = "0d"
                 lib.echo(tp_command)
                 lib.execute("tp @s "+tp_command)
                 step = STAGE.CHOOSE_NAME
             case STAGE.CHOOSE_NAME:
                 lib.echo("Type the name of the track into chat.")
                 name = lib.wait_for_chat_message(".*").strip()
-                step = STAGE.CONFIRM_NAME
+                if "\"" in name or "\\" in name:
+                    lib.echo("Invalid character found.")
+                else:
+                    step = STAGE.CONFIRM_NAME
             case STAGE.CONFIRM_NAME:
                 lib.echo(f"The name of the track is \"{name}\". Type yes/no to confirm.")
                 if lib.wait_for_chat_message("(yes|no)") == "yes":
@@ -257,8 +260,8 @@ if __name__ == "__main__":
             case STAGE.CHOOSE_MUSIC:
                 lib.echo(f"Please hold the music disc to use for this track in your MAIN HAND. Type 'done when finished'.")
                 lib.wait_for_chat_message("done")
-                m.execute(f"item replace block {mx} {my+1} {mz+2} container.1 from entity @s weapon.mainhand")
-                music_command = f"setblock {mx} {my+1} {mz} redstone_block"
+                m.execute(f"data modify block {mx} {my+1} {mz} Items append from storage minecraft:options StartMusic")
+                m.execute(f"item replace block {mx} {my+1} {mz} container.1 from entity @s weapon.mainhand")
                 step=STAGE.SET_TIME
             case STAGE.SET_TIME:
                 lib.echo("Set the time to the time you want it to be. Type 'done' when finished")
@@ -296,7 +299,6 @@ if __name__ == "__main__":
                 else:
                     step = STAGE.SET_CUP
             case STAGE.CREATE_TRACK:
-                time.sleep(10)
                 cutscene_id = lib.get_new_cut_id()
                 m.execute("data modify storage tracks TrackData append value {new:1b}")
                 if weather_type == "clear":
@@ -305,24 +307,24 @@ if __name__ == "__main__":
                     lib.execute("data modify storage tracks TrackData[{new:1b}].Weather.Rain set value 1b")
                 if weather_type == "thunder":
                     lib.execute("data modify storage tracks TrackData[{new:1b}].Weather.Thunder set value 1b")
-                lib.execute("data modify storage tracks TrackData[{new:1b}].StartPos.x set value " + tp_x)
-                lib.execute("data modify storage tracks TrackData[{new:1b}].StartPos.y set value " + tp_y)
-                lib.execute("data modify storage tracks TrackData[{new:1b}].StartPos.z set value " + tp_z)
-                lib.execute("data modify storage tracks TrackData[{new:1b}].StartPos.pitch set value " + tp_pitch)
-                lib.execute("data modify storage tracks TrackData[{new:1b}].StartPos.yaw set value " + tp_yaw)
+                lib.execute("data modify storage tracks TrackData[{new:1b}].StartPos.x set value " + tp_x+"d")
+                lib.execute("data modify storage tracks TrackData[{new:1b}].StartPos.y set value " + tp_y+"d")
+                lib.execute("data modify storage tracks TrackData[{new:1b}].StartPos.z set value " + tp_z+"d")
+                lib.execute("data modify storage tracks TrackData[{new:1b}].StartPos.yaw set value " + tp_yaw+"f")
+                lib.execute("data modify storage tracks TrackData[{new:1b}].StartPos.pitch set value " + tp_pitch+"f")
                 lib.execute("data modify storage tracks TrackData[{new:1b}].DayTime set value " + str(time_of_day))
                 lib.execute("data modify storage tracks TrackData[{new:1b}].Gate.Destroy set value " + f'"fill {gate_coords} air"')
                 lib.execute("data modify storage tracks TrackData[{new:1b}].Gate.Make set value " + f'"fill {gate_coords} {b.replace("\\","\\\\").replace("\"","\\\"")}"')
                 lib.execute("data modify storage tracks TrackData[{new:1b}].id set value " + str(cutscene_id))
-                lib.execute("data modify storage tracks TrackData[{new:1b}].Name set value " + name)
+                lib.execute("data modify storage tracks TrackData[{new:1b}].Name set value " + "\"" + name + "\"")
+                lib.execute("data modify storage tracks TrackData[{new:1b}].Music.x set value " + str(mx))
+                lib.execute("data modify storage tracks TrackData[{new:1b}].Music.y set value " + str(my))
+                lib.execute("data modify storage tracks TrackData[{new:1b}].Music.z set value " + str(mz))
                 lib.execute("data remove storage tracks TrackData[{new:1b}].new")
-                created = create_track(
-                    index, tp_command, name, time_of_day, weather_type,
-                    gate_coords, b, music_command, cutscene_id
-                )
-                if not created:
-                    step = STAGE.SET_CUP
-                    continue
+                # created = create_track(
+                #     index, tp_command, name, time_of_day, weather_type,
+                #     gate_coords, b, music_command, cutscene_id
+                # )
                 time.sleep(3)
                 step = STAGE.CREATE_CUT
                 lib.execute(f"tp @s {tp_command}")

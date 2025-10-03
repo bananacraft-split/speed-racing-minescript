@@ -132,9 +132,6 @@ def count_entity(selector):
 def test(cmd):
     return "failed" not in execute_get_result(cmd, lambda x: x.startswith("Test"))
 
-def is_track(index):
-    return test(f"execute if block {170+index*2} -60 -25 command_block")
-
 GET_INT_RE = re.compile("^.* has the following contents: ([0-9]+)$")
 
 def get_new_cut_id():
@@ -157,3 +154,13 @@ def get_entity_nbt(selector: str, path: str | None = None) -> amulet_nbt.AnyNBT:
         return amulet_nbt.from_snbt(NBT_REGEX.match(execute_get_result(f"data get entity {selector}", NBT_REGEX.match)).group(1))
     else:
         return amulet_nbt.from_snbt(NBT_REGEX.match(execute_get_result(f"data get entity {selector} {path}", NBT_REGEX.match)).group(1))
+    
+    
+STORAGE_REGEX = re.compile("^(?:.*? has the following contents: (.*))|(?:Found no elements matching .*)$")
+def get_storage_nbt(selector: str, path: str | None = None) -> amulet_nbt.AnyNBT | None:
+    if path is None:
+        g = STORAGE_REGEX.match(execute_get_result(f"data get storage {selector}", STORAGE_REGEX.match)).group(1)
+        return g if g is None else amulet_nbt.from_snbt(g)
+    else:
+        g = STORAGE_REGEX.match(execute_get_result(f"data get storage {selector} {path}", STORAGE_REGEX.match)).group(1)
+        return g if g is None else amulet_nbt.from_snbt(g)
