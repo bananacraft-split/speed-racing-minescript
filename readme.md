@@ -3,6 +3,7 @@
 1. Install the minescript mod [here](https://www.curseforge.com/minecraft/mc-mods/minescript).
 1. Run the game once to fully load everything.
 1. Put this repository into the `minescript` folder in the instance's directory
+2. You also need to run `pip install amulet_nbt`
 
 # Usage
 
